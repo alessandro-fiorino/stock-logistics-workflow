@@ -51,11 +51,3 @@ class StockPicking(models.Model):
             picking._backdating_update_picking_date()
             picking._backdating_update_account_moves_date()
         return result
-
-    def _create_backorder(self):
-        # When a move needs backdating,
-        # we are processing the moves of a picking one by one,
-        # so we don't have to create a backorder if a move is missing
-        if "date_backdating" not in self.env.context:
-            return super()._create_backorder()
-        return self.env["stock.picking"]

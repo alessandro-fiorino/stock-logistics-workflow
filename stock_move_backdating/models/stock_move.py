@@ -47,6 +47,7 @@ class StockMove(models.Model):
             moves_todo_ids.update(move_todo.ids)
 
             # overwrite date field where applicable
+            move_line = first(move.move_line_ids)
             date_backdating = move_line.date_backdating
             if date_backdating:
                 check_date(date_backdating)
@@ -62,7 +63,9 @@ class StockMove(models.Model):
         moves_todo = self.env["stock.move"]
         has_move_lines_to_backdate = any(self.mapped("move_line_ids.date_backdating"))
         if not has_move_lines_to_backdate:
-            moves_todo |= super()._action_done(cancel_backorder=cancel_backorder)
+            res = super(StockMove, self)._action_done(cancel_backorder=cancel_backorder)
+            if res:
+                moves_todo |= res
         else:
             moves_todo = self._backdating_action_done(
                 moves_todo, cancel_backorder=cancel_backorder
