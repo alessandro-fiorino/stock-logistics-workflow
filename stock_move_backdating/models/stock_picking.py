@@ -16,9 +16,7 @@ class StockPicking(models.Model):
         store=True,
     )
 
-    @api.depends(
-        "move_line_ids.date_backdating",
-    )
+    @api.depends("move_line_ids.date_backdating")
     def _compute_date_backdating(self):
         for picking in self:
             move_lines = picking.move_line_ids
@@ -47,8 +45,8 @@ class StockPicking(models.Model):
         stock_moves._backdating_account_moves()
         return True
 
-    def action_done(self):
-        result = super().action_done()
+    def _action_done(self):
+        result = super()._action_done()
         for picking in self:
             picking._backdating_update_picking_date()
             picking._backdating_update_account_moves_date()
@@ -60,3 +58,4 @@ class StockPicking(models.Model):
         # so we don't have to create a backorder if a move is missing
         if "date_backdating" not in self.env.context:
             return super()._create_backorder()
+        return self.env["stock.picking"]

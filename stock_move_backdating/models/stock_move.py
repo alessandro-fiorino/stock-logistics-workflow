@@ -5,7 +5,7 @@
 # Copyright 2023 Simone Rubino - TAKOBI
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
-from odoo import api, models
+from odoo import models
 from odoo.fields import first
 
 from .stock_move_line import check_date
@@ -31,7 +31,7 @@ class StockMove(models.Model):
                 }
             )
 
-    def _backdating_action_done(self, moves_todo):
+    def _backdating_action_done(self, moves_todo, cancel_backorder=False):
         """Process the moves one by one, backdating the ones that need to."""
         moves_todo_ids = set(moves_todo.ids)
         for move in self:
@@ -41,8 +41,9 @@ class StockMove(models.Model):
                 move = move.with_context(
                     date_backdating=date_backdating,
                 )
-
-            move_todo = super(StockMove, move)._action_done()
+            move_todo = super(StockMove, move)._action_done(
+                cancel_backorder=cancel_backorder
+            )
             moves_todo_ids.update(move_todo.ids)
 
             # overwrite date field where applicable
@@ -57,12 +58,13 @@ class StockMove(models.Model):
                 )
         return self.browse(moves_todo_ids)
 
-    @api.multi
-    def _action_done(self):
+    def _action_done(self, cancel_backorder=False):
         moves_todo = self.env["stock.move"]
         has_move_lines_to_backdate = any(self.mapped("move_line_ids.date_backdating"))
         if not has_move_lines_to_backdate:
-            moves_todo |= super()._action_done()
+            moves_todo |= super()._action_done(cancel_backorder=cancel_backorder)
         else:
-            moves_todo = self._backdating_action_done(moves_todo)
+            moves_todo = self._backdating_action_done(
+                moves_todo, cancel_backorder=cancel_backorder
+            )
         return moves_todo
