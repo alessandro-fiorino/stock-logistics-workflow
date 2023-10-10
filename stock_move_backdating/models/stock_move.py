@@ -33,6 +33,7 @@ class StockMove(models.Model):
 
     def _backdating_stock_valuation_layers(self):
         """Set date on linked stock.valuation.layer same for each move in `self`."""
+        self = self.sudo()
         picking_stock_valuation_layers = self.env["stock.valuation.layer"].search(
             [
                 ("stock_move_id", "in", self.ids),
