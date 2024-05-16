@@ -42,7 +42,7 @@ class StockMove(models.Model):
 
     def _backdating_account_moves(self):
         """Set date on linked account.move same for each move in `self`."""
-        picking_account_moves = self.env["account.move"].search(
+        picking_account_moves = self.env["account.move"].sudo().search(
             [
                 ("stock_move_id", "in", self.ids),
             ],
