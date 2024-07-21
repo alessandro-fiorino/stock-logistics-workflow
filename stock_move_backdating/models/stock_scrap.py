@@ -1,7 +1,8 @@
 # Copyright 2024 Ecosoft Co., Ltd. (http://ecosoft.co.th)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
-from odoo import Command, api, fields, models
+from odoo import api, fields, models
+
 from .stock_move_line import check_date
 
 
